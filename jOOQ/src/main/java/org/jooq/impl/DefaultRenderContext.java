@@ -75,7 +75,7 @@ class DefaultRenderContext extends AbstractContext<RenderContext> implements Ren
     }
 
     DefaultRenderContext(RenderContext context) {
-        this((Configuration) context);
+        this(context.configuration());
 
         inline(context.inline());
         namedParams(context.namedParams());
@@ -356,7 +356,7 @@ class DefaultRenderContext extends AbstractContext<RenderContext> implements Ren
             case NEVER:
                 return false;
             case SOME:
-                return asList(castDialects).contains(getDialect());
+                return asList(castDialects).contains(configuration.getDialect());
         }
 
         return null;

@@ -96,7 +96,7 @@ class Cast<T> extends AbstractField<T> {
                        .castMode(castMode)
                        .keyword(" as char(38))")
                        .keyword(" as ")
-                       .keyword(getDataType(context).getCastTypeName(context))
+                       .keyword(getDataType(context.configuration()).getCastTypeName(context.configuration()))
                        .sql("))");
 
                 return;
@@ -113,7 +113,7 @@ class Cast<T> extends AbstractField<T> {
                        .castMode(castMode)
                        .keyword(" as decimal)")
                        .keyword(" as ")
-                       .keyword(getDataType(context).getCastTypeName(context))
+                       .keyword(getDataType(context.configuration()).getCastTypeName(context.configuration()))
                        .sql(")");
 
                 return;
@@ -142,7 +142,7 @@ class Cast<T> extends AbstractField<T> {
                .sql(field)
                .castMode(castMode)
                .keyword(" as ")
-               .keyword(getDataType(context).getCastTypeName(context))
+               .keyword(getDataType(context.configuration()).getCastTypeName(context.configuration()))
                .sql(")");
     }
 

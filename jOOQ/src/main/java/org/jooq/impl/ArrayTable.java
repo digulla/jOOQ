@@ -146,12 +146,12 @@ class ArrayTable extends AbstractTable<Record> {
 
     @Override
     public final void toSQL(RenderContext context) {
-        context.sql(table(context));
+        context.sql(table(context.configuration()));
     }
 
     @Override
     public final void bind(BindContext context) {
-        context.bind(table(context));
+        context.bind(table(context.configuration()));
     }
 
     private final Table<Record> table(Configuration configuration) {

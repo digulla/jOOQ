@@ -30,11 +30,10 @@
  */
 package org.jooq.util.cubrid;
 
-import java.sql.Connection;
-
+import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
-import org.jooq.conf.Settings;
+import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.Factory;
 
 /**
@@ -50,43 +49,6 @@ public class CUBRIDFactory extends Factory {
     private static final long serialVersionUID = 6530433807914995633L;
 
     /**
-     * Create a factory with connection and a schema mapping configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param mapping The schema mapping to use with objects created from this
-     *            factory
-     * @deprecated - 2.0.5 - Use {@link #CUBRIDFactory(Connection, Settings)}
-     *             instead
-     */
-    @Deprecated
-    public CUBRIDFactory(Connection connection, org.jooq.SchemaMapping mapping) {
-        super(connection, SQLDialect.CUBRID, mapping);
-    }
-
-    /**
-     * Create a factory with connection and a settings configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    public CUBRIDFactory(Connection connection, Settings settings) {
-        super(connection, SQLDialect.CUBRID, settings);
-    }
-
-    /**
-     * Create a factory with connection
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     */
-    public CUBRIDFactory(Connection connection) {
-        super(connection, SQLDialect.CUBRID);
-    }
-
-    /**
      * Create a factory with settings configured
      * <p>
      * Without a connection, this factory cannot execute queries. Use it to
@@ -94,9 +56,10 @@ public class CUBRIDFactory extends Factory {
      *
      * @param settings The runtime settings to apply to objects created from
      *            this factory
+     * @param configuration
      */
-    public CUBRIDFactory(Settings settings) {
-        super(SQLDialect.CUBRID, settings);
+    public CUBRIDFactory(Configuration configuration) {
+        super(new DefaultConfiguration(configuration, SQLDialect.CUBRID));
     }
 
     /**
@@ -106,7 +69,7 @@ public class CUBRIDFactory extends Factory {
      * render SQL only.
      */
     public CUBRIDFactory() {
-        super(SQLDialect.CUBRID);
+        super(new DefaultConfiguration(SQLDialect.CUBRID));
     }
 
     // -------------------------------------------------------------------------

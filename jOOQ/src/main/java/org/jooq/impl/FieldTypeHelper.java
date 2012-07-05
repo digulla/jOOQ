@@ -38,7 +38,6 @@ package org.jooq.impl;
 
 import static org.jooq.SQLDialect.CUBRID;
 import static org.jooq.SQLDialect.POSTGRES;
-import static org.jooq.impl.Factory.getNewFactory;
 import static org.jooq.tools.reflect.Reflect.on;
 
 import java.math.BigDecimal;
@@ -397,7 +396,7 @@ public final class FieldTypeHelper {
         }
         else if (type == BigInteger.class) {
         	// The SQLite JDBC driver doesn't support BigDecimals
-            if (ctx.getDialect() == SQLDialect.SQLITE) {
+            if (ctx.configuration().getDialect() == SQLDialect.SQLITE) {
                 return Convert.convert(rs.getString(index), (Class<? extends T>) BigInteger.class);
             }
             else {
@@ -407,7 +406,7 @@ public final class FieldTypeHelper {
         }
         else if (type == BigDecimal.class) {
             // The SQLite JDBC driver doesn't support BigDecimals
-            if (ctx.getDialect() == SQLDialect.SQLITE) {
+            if (ctx.configuration().getDialect() == SQLDialect.SQLITE) {
                 return Convert.convert(rs.getString(index), (Class<? extends T>) BigDecimal.class);
             }
             else {
@@ -424,7 +423,7 @@ public final class FieldTypeHelper {
             return (T) rs.getClob(index);
         }
         else if (type == Date.class) {
-            return (T) getDate(ctx.getDialect(), rs, index);
+            return (T) getDate(ctx.configuration().getDialect(), rs, index);
         }
         else if (type == Double.class) {
             return (T) checkWasNull(rs, Double.valueOf(rs.getDouble(index)));
@@ -445,13 +444,13 @@ public final class FieldTypeHelper {
             return (T) rs.getString(index);
         }
         else if (type == Time.class) {
-            return (T) getTime(ctx.getDialect(), rs, index);
+            return (T) getTime(ctx.configuration().getDialect(), rs, index);
         }
         else if (type == Timestamp.class) {
-            return (T) getTimestamp(ctx.getDialect(), rs, index);
+            return (T) getTimestamp(ctx.configuration().getDialect(), rs, index);
         }
         else if (type == YearToMonth.class) {
-            if (ctx.getDialect() == POSTGRES) {
+            if (ctx.configuration().getDialect() == POSTGRES) {
                 Object object = rs.getObject(index);
                 return (T) (object == null ? null : PostgresUtils.toYearToMonth(object));
             }
@@ -461,7 +460,7 @@ public final class FieldTypeHelper {
             }
         }
         else if (type == DayToSecond.class) {
-            if (ctx.getDialect() == POSTGRES) {
+            if (ctx.configuration().getDialect() == POSTGRES) {
                 Object object = rs.getObject(index);
                 return (T) (object == null ? null : PostgresUtils.toDayToSecond(object));
             }
@@ -489,7 +488,7 @@ public final class FieldTypeHelper {
 
         // The type byte[] is handled earlier. byte[][] can be handled here
         else if (type.isArray()) {
-            switch (ctx.getDialect()) {
+            switch (ctx.configuration().getDialect()) {
                 case POSTGRES: {
                     return pgGetArray(ctx, type, index);
                 }
@@ -501,7 +500,7 @@ public final class FieldTypeHelper {
             }
         }
         else if (ArrayRecord.class.isAssignableFrom(type)) {
-            return (T) getArrayRecord(ctx, rs.getArray(index), (Class<? extends ArrayRecord<?>>) type);
+            return (T) getArrayRecord(ctx.configuration(), rs.getArray(index), (Class<? extends ArrayRecord<?>>) type);
         }
         else if (EnumType.class.isAssignableFrom(type)) {
             return getEnumType(type, rs.getString(index));
@@ -510,7 +509,7 @@ public final class FieldTypeHelper {
             return (T) getMasterDataType(type, rs.getObject(index));
         }
         else if (UDTRecord.class.isAssignableFrom(type)) {
-            switch (ctx.getDialect()) {
+            switch (ctx.configuration().getDialect()) {
                 case POSTGRES:
                     return (T) pgNewUDTRecord(type, rs.getObject(index));
             }
@@ -519,7 +518,7 @@ public final class FieldTypeHelper {
         }
         else if (Result.class.isAssignableFrom(type)) {
             ResultSet nested = (ResultSet) rs.getObject(index);
-            return (T) getNewFactory(ctx).fetch(nested);
+            return (T) ctx.configuration().getNewFactory().fetch(nested);
         }
         else {
             return (T) rs.getObject(index);
@@ -779,7 +778,7 @@ public final class FieldTypeHelper {
             return (T) stmt.getTimestamp(index);
         }
         else if (type == YearToMonth.class) {
-            if (ctx.getDialect() == POSTGRES) {
+            if (ctx.configuration().getDialect() == POSTGRES) {
                 Object object = stmt.getObject(index);
                 return (T) (object == null ? null : PostgresUtils.toYearToMonth(object));
             }
@@ -789,7 +788,7 @@ public final class FieldTypeHelper {
             }
         }
         else if (type == DayToSecond.class) {
-            if (ctx.getDialect() == POSTGRES) {
+            if (ctx.configuration().getDialect() == POSTGRES) {
                 Object object = stmt.getObject(index);
                 return (T) (object == null ? null : PostgresUtils.toDayToSecond(object));
             }
@@ -820,7 +819,7 @@ public final class FieldTypeHelper {
             return (T) convertArray(stmt.getObject(index), (Class<? extends Object[]>)type);
         }
         else if (ArrayRecord.class.isAssignableFrom(type)) {
-            return (T) getArrayRecord(ctx, stmt.getArray(index), (Class<? extends ArrayRecord<?>>) type);
+            return (T) getArrayRecord(ctx.configuration(), stmt.getArray(index), (Class<? extends ArrayRecord<?>>) type);
         }
         else if (EnumType.class.isAssignableFrom(type)) {
             return getEnumType(type, stmt.getString(index));
@@ -829,7 +828,7 @@ public final class FieldTypeHelper {
             return (T) getMasterDataType(type, stmt.getString(index));
         }
         else if (UDTRecord.class.isAssignableFrom(type)) {
-            switch (ctx.getDialect()) {
+            switch (ctx.configuration().getDialect()) {
                 case POSTGRES:
                     return (T) pgNewUDTRecord(type, stmt.getObject(index));
             }
@@ -838,7 +837,7 @@ public final class FieldTypeHelper {
         }
         else if (Result.class.isAssignableFrom(type)) {
             ResultSet nested = (ResultSet) stmt.getObject(index);
-            return (T) getNewFactory(ctx).fetch(nested);
+            return (T) ctx.configuration().getNewFactory().fetch(nested);
         }
         else {
             return (T) stmt.getObject(index);

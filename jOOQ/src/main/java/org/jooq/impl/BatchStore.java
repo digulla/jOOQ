@@ -78,7 +78,7 @@ class BatchStore implements Batch {
 
         // [#1180] Run batch queries with BatchMultiple, if no bind variables
         // should be used...
-        if (executeStaticStatements(create.getSettings())) {
+        if (executeStaticStatements(create.configuration().getSettings())) {
             return executeStatic();
         }
         else {
@@ -89,7 +89,7 @@ class BatchStore implements Batch {
     private final int[] executePrepared() {
         Map<String, List<Query>> queries = new LinkedHashMap<String, List<Query>>();
 
-        Settings work = create.getSettings();
+        Settings work = create.configuration().getSettings();
         Settings orig = SettingsTools.clone(work);
 
         try {
@@ -99,7 +99,7 @@ class BatchStore implements Batch {
                 Configuration previous = records[i].internalAPI(AttachableInternal.class).getConfiguration();
 
                 try {
-                    records[i].attach(create);
+                    records[i].attach(create.configuration());
                     records[i].store();
                 }
                 catch (QueryCollectorException e) {
@@ -158,7 +158,7 @@ class BatchStore implements Batch {
     private final int[] executeStatic() {
         List<Query> queries = new ArrayList<Query>();
 
-        Settings work = create.getSettings();
+        Settings work = create.configuration().getSettings();
         Settings orig = SettingsTools.clone(work);
 
         try {
@@ -168,7 +168,7 @@ class BatchStore implements Batch {
                 Configuration previous = records[i].internalAPI(AttachableInternal.class).getConfiguration();
 
                 try {
-                    records[i].attach(create);
+                    records[i].attach(create.configuration());
                     records[i].store();
                 }
                 catch (QueryCollectorException e) {

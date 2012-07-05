@@ -35,7 +35,10 @@
  */
 package org.jooq;
 
+import java.io.Serializable;
 import java.sql.PreparedStatement;
+
+import org.jooq.conf.Settings;
 
 /**
  * A context type that is used for rendering SQL or for binding
@@ -46,7 +49,11 @@ import java.sql.PreparedStatement;
  * @see BindContext
  * @see RenderContext
  */
-public interface Context<C extends Context<C>> extends Configuration {
+public interface Context<C extends Context<C>> extends Serializable {
+
+    Configuration configuration();
+    SQLDialect getDialect();
+    Settings getSettings();
 
     /**
      * Whether the current context is rendering a SQL field declaration (e.g. a

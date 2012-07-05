@@ -78,14 +78,14 @@ class ArrayAsSubqueryCondition<T> extends AbstractCondition {
                .keyword(operator.toSQL())
                .sql(" (")
                .formatIndentLockStart()
-               .sql(array(context))
+               .sql(array(context.configuration()))
                .formatIndentLockEnd()
                .sql(")");
     }
 
     @Override
     public final void bind(BindContext context) {
-        context.bind(field).bind(array(context));
+        context.bind(field).bind(array(context.configuration()));
     }
 
     private final QueryPart array(Configuration context) {

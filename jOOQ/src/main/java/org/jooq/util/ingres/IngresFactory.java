@@ -35,11 +35,9 @@
  */
 package org.jooq.util.ingres;
 
-import java.sql.Connection;
-
+import org.jooq.Configuration;
 import org.jooq.SQLDialect;
-import org.jooq.SchemaMapping;
-import org.jooq.conf.Settings;
+import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.Factory;
 
 /**
@@ -47,7 +45,6 @@ import org.jooq.impl.Factory;
  *
  * @author Lukas Eder
  */
-@SuppressWarnings("deprecation")
 public class IngresFactory extends Factory {
 
     /**
@@ -56,53 +53,14 @@ public class IngresFactory extends Factory {
     private static final long serialVersionUID = -2018237718414421677L;
 
     /**
-     * Create a factory with connection and a schema mapping configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param mapping The schema mapping to use with objects created from this
-     *            factory
-     * @deprecated - 2.0.5 - Use {@link #IngresFactory(Connection, Settings)}
-     *             instead
-     */
-    @Deprecated
-    public IngresFactory(Connection connection, SchemaMapping mapping) {
-        super(connection, SQLDialect.INGRES, mapping);
-    }
-
-    /**
-     * Create a factory with connection and a settings configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    public IngresFactory(Connection connection, Settings settings) {
-        super(connection, SQLDialect.INGRES, settings);
-    }
-
-    /**
-     * Create a factory with connection
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     */
-    public IngresFactory(Connection connection) {
-        super(connection, SQLDialect.INGRES);
-    }
-
-    /**
      * Create a factory with settings configured
      * <p>
      * Without a connection, this factory cannot execute queries. Use it to
      * render SQL only.
      *
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
      */
-    public IngresFactory(Settings settings) {
-        super(SQLDialect.INGRES, settings);
+    public IngresFactory(Configuration configuration) {
+        super(new DefaultConfiguration(configuration, SQLDialect.INGRES));
     }
 
     /**
@@ -112,6 +70,6 @@ public class IngresFactory extends Factory {
      * render SQL only.
      */
     public IngresFactory() {
-        super(SQLDialect.INGRES);
+        super(new DefaultConfiguration(SQLDialect.INGRES));
     }
 }

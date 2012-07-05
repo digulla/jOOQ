@@ -35,12 +35,10 @@
  */
 package org.jooq.util.sqlite;
 
-import java.sql.Connection;
-
+import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
-import org.jooq.SchemaMapping;
-import org.jooq.conf.Settings;
+import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.Factory;
 
 /**
@@ -48,50 +46,12 @@ import org.jooq.impl.Factory;
  *
  * @author Lukas Eder
  */
-@SuppressWarnings("deprecation")
 public class SQLiteFactory extends Factory {
 
     /**
      * Generated UID
      */
     private static final long serialVersionUID = -351817568648116452L;
-
-    /**
-     * Create a factory with connection and a schema mapping configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param mapping The schema mapping to use with objects created from this
-     *            factory
-     * @deprecated - 2.0.5 - Use {@link #SQLiteFactory(Connection, Settings)}
-     *             instead
-     */
-    @Deprecated
-    public SQLiteFactory(Connection connection, SchemaMapping mapping) {
-        super(connection, SQLDialect.SQLITE, mapping);
-    }
-
-    /**
-     * Create a factory with connection and a settings configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    public SQLiteFactory(Connection connection, Settings settings) {
-        super(connection, SQLDialect.SQLITE, settings);
-    }
-
-    /**
-     * Create a factory with connection
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     */
-    public SQLiteFactory(Connection connection) {
-        super(connection, SQLDialect.SQLITE);
-    }
 
     /**
      * Create a factory with settings configured
@@ -102,8 +62,8 @@ public class SQLiteFactory extends Factory {
      * @param settings The runtime settings to apply to objects created from
      *            this factory
      */
-    public SQLiteFactory(Settings settings) {
-        super(SQLDialect.SQLITE, settings);
+    public SQLiteFactory(Configuration configuration) {
+        super(new DefaultConfiguration(configuration, SQLDialect.SQLITE));
     }
 
     /**
@@ -113,7 +73,7 @@ public class SQLiteFactory extends Factory {
      * render SQL only.
      */
     public SQLiteFactory() {
-        super(SQLDialect.SQLITE);
+        super(new DefaultConfiguration(SQLDialect.SQLITE));
     }
 
     // -------------------------------------------------------------------------

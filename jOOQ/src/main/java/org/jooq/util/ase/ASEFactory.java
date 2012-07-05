@@ -30,11 +30,9 @@
  */
 package org.jooq.util.ase;
 
-import java.sql.Connection;
-
+import org.jooq.Configuration;
 import org.jooq.SQLDialect;
-import org.jooq.SchemaMapping;
-import org.jooq.conf.Settings;
+import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.Factory;
 
 /**
@@ -42,50 +40,12 @@ import org.jooq.impl.Factory;
  *
  * @author Lukas Eder
  */
-@SuppressWarnings("deprecation")
 public class ASEFactory extends Factory {
 
     /**
      * Generated UID
      */
     private static final long serialVersionUID = 6530433807914995633L;
-
-    /**
-     * Create a factory with connection and a schema mapping configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param mapping The schema mapping to use with objects created from this
-     *            factory
-     * @deprecated - 2.0.5 - Use {@link #ASEFactory(Connection, Settings)}
-     *             instead
-     */
-    @Deprecated
-    public ASEFactory(Connection connection, SchemaMapping mapping) {
-        super(connection, SQLDialect.ASE, mapping);
-    }
-
-    /**
-     * Create a factory with connection and a settings configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    public ASEFactory(Connection connection, Settings settings) {
-        super(connection, SQLDialect.ASE, settings);
-    }
-
-    /**
-     * Create a factory with connection
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     */
-    public ASEFactory(Connection connection) {
-        super(connection, SQLDialect.ASE);
-    }
 
     /**
      * Create a factory with settings configured
@@ -96,8 +56,8 @@ public class ASEFactory extends Factory {
      * @param settings The runtime settings to apply to objects created from
      *            this factory
      */
-    public ASEFactory(Settings settings) {
-        super(SQLDialect.ASE, settings);
+    public ASEFactory(Configuration configuration) {
+        super(new DefaultConfiguration(configuration, SQLDialect.ASE));
     }
 
     /**
@@ -107,6 +67,6 @@ public class ASEFactory extends Factory {
      * render SQL only.
      */
     public ASEFactory() {
-        super(SQLDialect.ASE);
+        super(new DefaultConfiguration(SQLDialect.ASE));
     }
 }

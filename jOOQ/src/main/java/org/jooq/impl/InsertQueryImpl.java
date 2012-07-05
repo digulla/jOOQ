@@ -428,11 +428,12 @@ class InsertQueryImpl<R extends Record> extends AbstractStoreQuery<R> implements
 
     @Override
     protected final void prepare(ExecuteContext ctx) throws SQLException {
-        Connection connection = ctx.getConnection();
+        Configuration configuration = ctx.configuration();
+        Connection connection = configuration.getConnectionProvider().getConnection();
 
         // Just in case, always set Sybase ASE statement mode to return
         // Generated keys if client code wants to SELECT @@identity afterwards
-        if (ctx.getDialect() == SQLDialect.ASE) {
+        if (configuration.getDialect() == SQLDialect.ASE) {
             ctx.statement(connection.prepareStatement(ctx.sql(), Statement.RETURN_GENERATED_KEYS));
             return;
         }
@@ -445,7 +446,7 @@ class InsertQueryImpl<R extends Record> extends AbstractStoreQuery<R> implements
 
         // Values should be returned from the INSERT
         else {
-            switch (ctx.getDialect()) {
+            switch (ctx.configuration().getDialect()) {
 
                 // Postgres uses the RETURNING clause in SQL
                 case POSTGRES:
@@ -490,9 +491,10 @@ class InsertQueryImpl<R extends Record> extends AbstractStoreQuery<R> implements
             return super.execute(ctx, listener);
         }
         else {
+            Configuration configuration = ctx.configuration();
             int result = 1;
             ResultSet rs;
-            switch (ctx.getDialect()) {
+            switch (configuration.getDialect()) {
 
                 // SQLite can select _rowid_ after the insert
                 case SQLITE: {
@@ -500,7 +502,7 @@ class InsertQueryImpl<R extends Record> extends AbstractStoreQuery<R> implements
                     result = ctx.statement().executeUpdate();
                     listener.executeEnd(ctx);
 
-                    SQLiteFactory create = new SQLiteFactory(ctx.getConnection(), ctx.getSettings());
+                    SQLiteFactory create = new SQLiteFactory(configuration);
                     returned =
                     create.select(returning)
                           .from(getInto())
@@ -520,7 +522,7 @@ class InsertQueryImpl<R extends Record> extends AbstractStoreQuery<R> implements
                     result = ctx.statement().executeUpdate();
                     listener.executeEnd(ctx);
 
-                    selectReturning(ctx.configuration(), create(ctx).lastID());
+                    selectReturning(ctx.configuration(), create(configuration).lastID());
                     return result;
                 }
 
@@ -545,7 +547,7 @@ class InsertQueryImpl<R extends Record> extends AbstractStoreQuery<R> implements
                             list.add(rs.getObject(1));
                         }
 
-                        selectReturning(ctx, list.toArray());
+                        selectReturning(configuration, list.toArray());
                         return result;
                     }
                     finally {

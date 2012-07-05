@@ -35,7 +35,7 @@
  */
 package org.jooq;
 
-import java.sql.Connection;
+import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -52,7 +52,7 @@ import org.jooq.exception.DataAccessException;
  * @author Lukas Eder
  * @see ExecuteListener
  */
-public interface ExecuteContext extends Configuration {
+public interface ExecuteContext extends Serializable {
 
     /**
      * The configuration wrapped by this context
@@ -132,8 +132,7 @@ public interface ExecuteContext extends Configuration {
     /**
      * The {@link Connection} that is being used for execution.
      */
-    @Override
-    Connection getConnection();
+//    Connection getConnection();
 
     /**
      * Override the {@link Connection} that is being used for execution.
@@ -142,8 +141,7 @@ public interface ExecuteContext extends Configuration {
      *
      * @see ExecuteListener#start(ExecuteContext)
      */
-    @Override
-    void setConnection(Connection connection);
+//    void setConnection(Connection connection);
 
     /**
      * The {@link PreparedStatement} that is being executed or <code>null</code>

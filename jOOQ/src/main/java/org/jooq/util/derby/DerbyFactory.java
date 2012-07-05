@@ -35,11 +35,9 @@
  */
 package org.jooq.util.derby;
 
-import java.sql.Connection;
-
+import org.jooq.Configuration;
 import org.jooq.SQLDialect;
-import org.jooq.SchemaMapping;
-import org.jooq.conf.Settings;
+import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.Factory;
 
 /**
@@ -47,7 +45,6 @@ import org.jooq.impl.Factory;
  *
  * @author Lukas Eder
  */
-@SuppressWarnings("deprecation")
 public class DerbyFactory extends Factory {
 
     /**
@@ -56,53 +53,15 @@ public class DerbyFactory extends Factory {
     private static final long serialVersionUID = -6387408751125022685L;
 
     /**
-     * Create a factory with connection and a schema mapping configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param mapping The schema mapping to use with objects created from this
-     *            factory
-     * @deprecated - 2.0.5 - Use {@link #DerbyFactory(Connection, Settings)}
-     *             instead
-     */
-    @Deprecated
-    public DerbyFactory(Connection connection, SchemaMapping mapping) {
-        super(connection, SQLDialect.DERBY, mapping);
-    }
-
-    /**
-     * Create a factory with connection and a settings configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    public DerbyFactory(Connection connection, Settings settings) {
-        super(connection, SQLDialect.DERBY, settings);
-    }
-
-    /**
-     * Create a factory with connection
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     */
-    public DerbyFactory(Connection connection) {
-        super(connection, SQLDialect.DERBY);
-    }
-
-    /**
      * Create a factory with settings configured
      * <p>
      * Without a connection, this factory cannot execute queries. Use it to
      * render SQL only.
      *
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
+     * @param configuration
      */
-    public DerbyFactory(Settings settings) {
-        super(SQLDialect.DERBY, settings);
+    public DerbyFactory(Configuration configuration) {
+        super(new DefaultConfiguration(configuration, SQLDialect.DERBY));
     }
 
     /**
@@ -112,6 +71,6 @@ public class DerbyFactory extends Factory {
      * render SQL only.
      */
     public DerbyFactory() {
-        super(SQLDialect.DERBY);
+        super(new DefaultConfiguration(SQLDialect.DERBY));
     }
 }

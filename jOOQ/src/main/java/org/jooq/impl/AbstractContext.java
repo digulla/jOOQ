@@ -37,11 +37,13 @@ package org.jooq.impl;
 
 import org.jooq.Configuration;
 import org.jooq.Context;
+import org.jooq.SQLDialect;
+import org.jooq.conf.Settings;
 
 /**
  * @author Lukas Eder
  */
-abstract class AbstractContext<C extends Context<C>> extends AbstractConfiguration implements Context<C> {
+abstract class AbstractContext<C extends Context<C>> implements Context<C> {
 
     /**
      * Generated UID
@@ -53,8 +55,10 @@ abstract class AbstractContext<C extends Context<C>> extends AbstractConfigurati
     boolean                   subquery;
     int                       index;
 
+    protected Configuration configuration;
+
     AbstractContext(Configuration configuration) {
-        super(configuration);
+        this.configuration = configuration;
     }
 
     AbstractContext(Configuration configuration, boolean declareFields, boolean declareTables) {
@@ -66,6 +70,21 @@ abstract class AbstractContext<C extends Context<C>> extends AbstractConfigurati
     // ------------------------------------------------------------------------
     // XXX Context API
     // ------------------------------------------------------------------------
+
+    @Override
+    public Configuration configuration() {
+        return configuration;
+    }
+
+    @Override
+    public SQLDialect getDialect() {
+        return configuration.getDialect();
+    }
+
+    @Override
+    public Settings getSettings() {
+        return configuration.getSettings();
+    }
 
     @Override
     public final boolean declareFields() {

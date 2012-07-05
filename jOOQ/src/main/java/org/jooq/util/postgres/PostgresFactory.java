@@ -35,11 +35,9 @@
  */
 package org.jooq.util.postgres;
 
-import java.sql.Connection;
-
+import org.jooq.Configuration;
 import org.jooq.SQLDialect;
-import org.jooq.SchemaMapping;
-import org.jooq.conf.Settings;
+import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.Factory;
 
 /**
@@ -47,7 +45,6 @@ import org.jooq.impl.Factory;
  *
  * @author Lukas Eder
  */
-@SuppressWarnings("deprecation")
 public class PostgresFactory extends Factory {
 
     /**
@@ -56,53 +53,13 @@ public class PostgresFactory extends Factory {
     private static final long serialVersionUID = 3722639614267896473L;
 
     /**
-     * Create a factory with connection and a schema mapping configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param mapping The schema mapping to use with objects created from this
-     *            factory
-     * @deprecated - 2.0.5 - Use {@link #PostgresFactory(Connection, Settings)}
-     *             instead
-     */
-    @Deprecated
-    public PostgresFactory(Connection connection, SchemaMapping mapping) {
-        super(connection, SQLDialect.POSTGRES, mapping);
-    }
-
-    /**
-     * Create a factory with connection and a settings configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    public PostgresFactory(Connection connection, Settings settings) {
-        super(connection, SQLDialect.POSTGRES, settings);
-    }
-
-    /**
-     * Create a factory with connection
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     */
-    public PostgresFactory(Connection connection) {
-        super(connection, SQLDialect.POSTGRES);
-    }
-
-    /**
      * Create a factory with settings configured
      * <p>
      * Without a connection, this factory cannot execute queries. Use it to
      * render SQL only.
-     *
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
      */
-    public PostgresFactory(Settings settings) {
-        super(SQLDialect.POSTGRES, settings);
+    public PostgresFactory(Configuration configuration) {
+        super(new DefaultConfiguration(configuration, SQLDialect.POSTGRES));
     }
 
     /**
@@ -112,6 +69,6 @@ public class PostgresFactory extends Factory {
      * render SQL only.
      */
     public PostgresFactory() {
-        super(SQLDialect.POSTGRES);
+        super(new DefaultConfiguration(SQLDialect.POSTGRES));
     }
 }

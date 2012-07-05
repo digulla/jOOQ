@@ -35,12 +35,10 @@
  */
 package org.jooq.util.oracle;
 
-import java.sql.Connection;
-
+import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
-import org.jooq.SchemaMapping;
-import org.jooq.conf.Settings;
+import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.Factory;
 import org.jooq.impl.SQLDataType;
 
@@ -49,7 +47,6 @@ import org.jooq.impl.SQLDataType;
  *
  * @author Lukas Eder
  */
-@SuppressWarnings("deprecation")
 public class OracleFactory extends Factory {
 
     /**
@@ -58,53 +55,13 @@ public class OracleFactory extends Factory {
     private static final long serialVersionUID = -1934939784130217163L;
 
     /**
-     * Create a factory with connection and a schema mapping configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param mapping The schema mapping to use with objects created from this
-     *            factory
-     * @deprecated - 2.0.5 - Use {@link #OracleFactory(Connection, Settings)}
-     *             instead
-     */
-    @Deprecated
-    public OracleFactory(Connection connection, SchemaMapping mapping) {
-        super(connection, SQLDialect.ORACLE, mapping);
-    }
-
-    /**
-     * Create a factory with connection and a settings configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    public OracleFactory(Connection connection, Settings settings) {
-        super(connection, SQLDialect.ORACLE, settings);
-    }
-
-    /**
-     * Create a factory with connection
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     */
-    public OracleFactory(Connection connection) {
-        super(connection, SQLDialect.ORACLE);
-    }
-
-    /**
      * Create a factory with settings configured
      * <p>
      * Without a connection, this factory cannot execute queries. Use it to
      * render SQL only.
-     *
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
      */
-    public OracleFactory(Settings settings) {
-        super(SQLDialect.ORACLE, settings);
+    public OracleFactory(Configuration configuration) {
+        super(new DefaultConfiguration(configuration, SQLDialect.ORACLE));
     }
 
     /**
@@ -114,7 +71,7 @@ public class OracleFactory extends Factory {
      * render SQL only.
      */
     public OracleFactory() {
-        super(SQLDialect.ORACLE);
+        super(new DefaultConfiguration(SQLDialect.ORACLE));
     }
 
     // -------------------------------------------------------------------------

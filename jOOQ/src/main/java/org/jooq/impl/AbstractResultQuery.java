@@ -120,15 +120,17 @@ abstract class AbstractResultQuery<R extends Record> extends AbstractQuery imple
     @Override
     protected final void prepare(ExecuteContext ctx) throws SQLException {
 
+        Configuration configuration = ctx.configuration();
+
         // [#1296] These dialects do not implement FOR UPDATE. But the same
         // effect can be achieved using ResultSet.CONCUR_UPDATABLE
-        if (isForUpdate() && asList(CUBRID, SQLSERVER).contains(ctx.getDialect())) {
-            ctx.statement(ctx.getConnection().prepareStatement(ctx.sql(), TYPE_SCROLL_SENSITIVE, CONCUR_UPDATABLE));
+        if (isForUpdate() && asList(CUBRID, SQLSERVER).contains(configuration.getDialect())) {
+            ctx.statement(configuration.getConnectionProvider().getConnection().prepareStatement(ctx.sql(), TYPE_SCROLL_SENSITIVE, CONCUR_UPDATABLE));
         }
 
         // Regular behaviour
         else {
-            ctx.statement(ctx.getConnection().prepareStatement(ctx.sql()));
+            ctx.statement(configuration.getConnectionProvider().getConnection().prepareStatement(ctx.sql()));
         }
 
         // [#1263] Allow for negative fetch sizes to support some non-standard
@@ -143,12 +145,13 @@ abstract class AbstractResultQuery<R extends Record> extends AbstractQuery imple
 
     @Override
     protected final int execute(ExecuteContext ctx, ExecuteListener listener) throws SQLException {
-        Connection connection = ctx.getConnection();
+        Configuration configuration = ctx.configuration();
+        Connection connection = configuration.getConnectionProvider().getConnection();
         boolean autoCommit = false;
 
         // [#706] Postgres requires two separate queries running in the same
         // transaction to be executed when fetching refcursor types
-        if (ctx.getDialect() == SQLDialect.POSTGRES && isSelectingRefCursor()) {
+        if (configuration.getDialect() == SQLDialect.POSTGRES && isSelectingRefCursor()) {
             autoCommit = connection.getAutoCommit();
 
             if (autoCommit) {
@@ -164,7 +167,7 @@ abstract class AbstractResultQuery<R extends Record> extends AbstractQuery imple
 
             // JTDS doesn't seem to implement PreparedStatement.execute()
             // correctly, at least not for sp_help
-            if (ctx.getDialect() == ASE) {
+            if (configuration.getDialect() == ASE) {
                 ctx.resultSet(ctx.statement().executeQuery());
             }
 
@@ -188,7 +191,7 @@ abstract class AbstractResultQuery<R extends Record> extends AbstractQuery imple
                     }
                 }
                 else {
-                    result = new ResultImpl<R>(ctx, new FieldList());
+                    result = new ResultImpl<R>(configuration, new FieldList());
                 }
             }
 
@@ -200,7 +203,7 @@ abstract class AbstractResultQuery<R extends Record> extends AbstractQuery imple
                 while (ctx.resultSet() != null) {
                     anyResults = true;
 
-                    FieldProvider fields = new MetaDataFieldProvider(ctx, ctx.resultSet().getMetaData());
+                    FieldProvider fields = new MetaDataFieldProvider(configuration, ctx.resultSet().getMetaData());
                     Cursor<Record> c = new CursorImpl<Record>(ctx, listener, fields, true);
                     results.add(c.fetch());
 

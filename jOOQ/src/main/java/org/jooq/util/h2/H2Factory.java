@@ -35,11 +35,9 @@
  */
 package org.jooq.util.h2;
 
-import java.sql.Connection;
-
+import org.jooq.Configuration;
 import org.jooq.SQLDialect;
-import org.jooq.SchemaMapping;
-import org.jooq.conf.Settings;
+import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.Factory;
 
 /**
@@ -47,7 +45,6 @@ import org.jooq.impl.Factory;
  *
  * @author Lukas Eder
  */
-@SuppressWarnings("deprecation")
 public class H2Factory extends Factory {
 
     /**
@@ -56,53 +53,13 @@ public class H2Factory extends Factory {
     private static final long serialVersionUID = -9107771365147317008L;
 
     /**
-     * Create a factory with connection and a schema mapping configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param mapping The schema mapping to use with objects created from this
-     *            factory
-     * @deprecated - 2.0.5 - Use {@link #H2Factory(Connection, Settings)}
-     *             instead
-     */
-    @Deprecated
-    public H2Factory(Connection connection, SchemaMapping mapping) {
-        super(connection, SQLDialect.H2, mapping);
-    }
-
-    /**
-     * Create a factory with connection and a settings configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    public H2Factory(Connection connection, Settings settings) {
-        super(connection, SQLDialect.H2, settings);
-    }
-
-    /**
-     * Create a factory with connection
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     */
-    public H2Factory(Connection connection) {
-        super(connection, SQLDialect.H2);
-    }
-
-    /**
      * Create a factory with settings configured
      * <p>
      * Without a connection, this factory cannot execute queries. Use it to
      * render SQL only.
-     *
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
      */
-    public H2Factory(Settings settings) {
-        super(SQLDialect.H2, settings);
+    public H2Factory(Configuration configuration) {
+        super(new DefaultConfiguration(configuration, SQLDialect.H2));
     }
 
     /**
@@ -112,6 +69,6 @@ public class H2Factory extends Factory {
      * render SQL only.
      */
     public H2Factory() {
-        super(SQLDialect.H2);
+        super(new DefaultConfiguration(SQLDialect.H2));
     }
 }

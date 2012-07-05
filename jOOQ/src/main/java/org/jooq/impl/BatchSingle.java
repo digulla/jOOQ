@@ -79,7 +79,7 @@ class BatchSingle implements BatchBindStep {
 
         // [#1180] Run batch queries with BatchMultiple, if no bind variables
         // should be used...
-        if (executeStaticStatements(create.getSettings())) {
+        if (executeStaticStatements(create.configuration().getSettings())) {
             return executeStatic();
         }
         else {
@@ -90,7 +90,7 @@ class BatchSingle implements BatchBindStep {
     private final int[] executePrepared() {
         Connection connection = create.getConnection();
 
-        ExecuteContext ctx = new DefaultExecuteContext(create, new Query[] { query });
+        ExecuteContext ctx = new DefaultExecuteContext(create.configuration(), new Query[] { query });
         ExecuteListener listener = new ExecuteListeners(ctx);
 
         // [#1371] fetch bind variables to restore them again, later
@@ -118,7 +118,7 @@ class BatchSingle implements BatchBindStep {
                 for (int i = 0; i < params.size(); i++) {
                     params.get(i).setConverted(bindValues[i]);
                 }
-                new DefaultBindContext(create, ctx.statement()).bind(query);
+                new DefaultBindContext(create.configuration(), ctx.statement()).bind(query);
 
                 listener.bindEnd(ctx);
                 ctx.statement().addBatch();

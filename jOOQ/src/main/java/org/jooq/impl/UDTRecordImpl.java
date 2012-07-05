@@ -74,7 +74,8 @@ public class UDTRecordImpl<R extends UDTRecord<R>> extends TypeRecord<UDT<R>> im
 
     @Override
     public final void readSQL(SQLInput stream, String typeName) throws SQLException {
-        Factory configuration = Factory.getNewFactory(getUDT().getDataType().getDialect());
+        Factory create = Factory.getNewFactory(getUDT().getDataType().getDialect());
+        Configuration configuration = create.configuration();
 
         for (Field<?> field : getUDT().getFields()) {
             setValue(configuration, stream, field);

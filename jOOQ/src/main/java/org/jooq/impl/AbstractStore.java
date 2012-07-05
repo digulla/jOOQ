@@ -90,7 +90,7 @@ abstract class AbstractStore<T> implements Store<T>, AttachableInternal {
      * This method is used in generated code!
      */
     protected final Factory create() {
-        return Factory.getNewFactory(getConfiguration());
+        return getConfiguration().getNewFactory();
     }
 
     // -------------------------------------------------------------------------

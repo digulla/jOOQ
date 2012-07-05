@@ -66,7 +66,6 @@ import static org.jooq.test.Table3.FIELD_ID3;
 import static org.jooq.test.Table3.TABLE3;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -140,7 +139,7 @@ public class jOOQTest {
     public void setUp() throws Exception {
         context = new Mockery();
         statement = context.mock(PreparedStatement.class);
-        create = new OracleFactory((Connection) null);
+        create = new OracleFactory();
     }
 
     @After

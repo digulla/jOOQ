@@ -71,7 +71,7 @@ class TruncateImpl<R extends Record> extends AbstractQuery implements Truncate<R
             // These dialects don't implement the TRUNCATE statement
             case INGRES:
             case SQLITE: {
-                context.sql(create(context).delete(table));
+                context.sql(create(context.configuration()).delete(table));
                 break;
             }
 

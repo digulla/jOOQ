@@ -36,12 +36,10 @@
 package org.jooq;
 
 import java.io.Serializable;
-import java.sql.Connection;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import org.jooq.conf.Settings;
+import org.jooq.impl.Factory;
 
 /**
  * The Configuration holds data about sql dialects and connections
@@ -56,24 +54,14 @@ public interface Configuration extends Serializable {
     SQLDialect getDialect();
 
     /**
-     * Retrieve the configured data source
+     * Retrieve the connection provider
      */
-    DataSource getDataSource();
+    ConnectionProvider getConnectionProvider();
 
     /**
-     * Set the configured data source
+     * Set the connection provider
      */
-    void setDataSource(DataSource datasource);
-
-    /**
-     * Retrieve the configured connection
-     */
-    Connection getConnection();
-
-    /**
-     * Set the configured connection
-     */
-    void setConnection(Connection connection);
+    void setConnectionProvider(ConnectionProvider connectionProvider);
 
     /**
      * Retrieve the configured schema mapping
@@ -143,4 +131,9 @@ public interface Configuration extends Serializable {
      */
     Object setData(String key, Object value);
 
+    /**
+     * Create a new factory
+     * @return
+     */
+    Factory getNewFactory();
 }

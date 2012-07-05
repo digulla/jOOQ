@@ -35,13 +35,11 @@
  */
 package org.jooq.impl;
 
-import java.lang.reflect.Constructor;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -49,6 +47,7 @@ import org.jooq.Attachable;
 import org.jooq.Batch;
 import org.jooq.BatchBindStep;
 import org.jooq.Condition;
+import org.jooq.Configuration;
 import org.jooq.Cursor;
 import org.jooq.DeleteQuery;
 import org.jooq.DeleteWhereStep;
@@ -116,74 +115,64 @@ public final class FactoryProxy implements FactoryOperations {
 
     private transient DataSource dataSource;
     private SQLDialect dialect;
-    private Settings settings;
 
     // -------------------------------------------------------------------------
     // Injected configuration
     // -------------------------------------------------------------------------
 
+    @Override
+    public Configuration configuration() {
+        return getDelegate().configuration();
+    }
+
     public final void setDialect(SQLDialect dialect) {
         this.dialect = dialect;
-    }
-
-    public final void setSettings(Settings settings) {
-        this.settings = settings;
-    }
-
-    @Override
-    public final void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    @Override
-    public final DataSource getDataSource() {
-        return this.dataSource;
     }
 
     // -------------------------------------------------------------------------
     // Configuration API
     // -------------------------------------------------------------------------
 
-    @Override
-    public final SQLDialect getDialect() {
-        return dialect;
-    }
-
-    @Override
-    @Deprecated
-    public final org.jooq.SchemaMapping getSchemaMapping() {
-        return null;
-    }
-
-    @Override
-    public final Settings getSettings() {
-        return settings;
-    }
-
-    @Override
-    public final Connection getConnection() {
-        return getDelegate().getConnection();
-    }
-
-    @Override
-    public final void setConnection(Connection connection) {
-        getDelegate().setConnection(connection);
-    }
-
-    @Override
-    public final Map<String, Object> getData() {
-        return getDelegate().getData();
-    }
-
-    @Override
-    public final Object getData(String key) {
-        return getDelegate().getData(key);
-    }
-
-    @Override
-    public final Object setData(String key, Object value) {
-        return getDelegate().setData(key, value);
-    }
+//    @Override
+//    public final SQLDialect getDialect() {
+//        return dialect;
+//    }
+//
+//    @Override
+//    @Deprecated
+//    public final org.jooq.SchemaMapping getSchemaMapping() {
+//        return null;
+//    }
+//
+//    @Override
+//    public final Settings getSettings() {
+//        return settings;
+//    }
+//
+//    @Override
+//    public final ConnectionProvider getConnectionProvider() {
+//        return getDelegate().getConnectionProvider();
+//    }
+//
+//    @Override
+//    public final void setConnectionProvider(ConnectionProvider connectionProvider) {
+//        getDelegate().setConnectionProvider(connectionProvider);
+//    }
+//
+//    @Override
+//    public final Map<String, Object> getData() {
+//        return getDelegate().getData();
+//    }
+//
+//    @Override
+//    public final Object getData(String key) {
+//        return getDelegate().getData(key);
+//    }
+//
+//    @Override
+//    public final Object setData(String key, Object value) {
+//        return getDelegate().setData(key, value);
+//    }
 
     // -------------------------------------------------------------------------
     // XXX FactoryOperations API
@@ -584,20 +573,22 @@ public final class FactoryProxy implements FactoryOperations {
         if (dataSource == null || dialect == null) {
             throw new DataAccessException("Both dataSource and dialect properties should be set");
         }
-        try {
-            Class<? extends Factory> clazz = getDialect().getFactory();
-            Connection con = getDataSource().getConnection();
-
-            Constructor<? extends Factory> constructor;
-            if (settings == null) {
-                constructor = clazz.getConstructor(Connection.class);
-                return constructor.newInstance(con);
-            } else {
-                constructor = clazz.getConstructor(Connection.class, Settings.class);
-                return constructor.newInstance(con, settings);
-            }
-        } catch (Exception exc) {
-            throw new DataAccessException("Failed to create jOOQ Factory", exc);
-        }
+        // TODO
+        throw new UnsupportedOperationException();
+//        try {
+//            Class<? extends Factory> clazz = getDialect().getFactory();
+//            Connection con = getConnectionProvider().getConnection();
+//
+//            Constructor<? extends Factory> constructor;
+//            if (settings == null) {
+//                constructor = clazz.getConstructor(Connection.class);
+//                return constructor.newInstance(con);
+//            } else {
+//                constructor = clazz.getConstructor(Connection.class, Settings.class);
+//                return constructor.newInstance(con, settings);
+//            }
+//        } catch (Exception exc) {
+//            throw new DataAccessException("Failed to create jOOQ Factory", exc);
+//        }
     }
 }

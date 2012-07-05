@@ -202,7 +202,7 @@ class Val<T> extends AbstractField<T> implements Param<T> {
      * Render the bind variable including a cast, if necessary
      */
     private void toSQLCast(RenderContext context) {
-        SQLDataType<T> type = getDataType(context).getSQLDataType();
+        SQLDataType<T> type = getDataType(context.configuration()).getSQLDataType();
 
         // [#822] Some RDBMS need precision / scale information on BigDecimals
         if (getValue() != null && getType() == BigDecimal.class && asList(CUBRID, DB2, DERBY, HSQLDB).contains(context.getDialect())) {
@@ -211,7 +211,7 @@ class Val<T> extends AbstractField<T> implements Param<T> {
             int scale = ((BigDecimal) getValue()).scale();
             int precision = scale + ((BigDecimal) getValue()).precision();
 
-            toSQLCast(context, getDataType(context), precision, scale);
+            toSQLCast(context, getDataType(context.configuration()), precision, scale);
         }
 
         // [#1028] Most databases don't know an OTHER type (except H2, HSQLDB).
@@ -245,7 +245,7 @@ class Val<T> extends AbstractField<T> implements Param<T> {
 
         // In all other cases, the bind variable can be cast normally
         else {
-            toSQLCast(context, getDataType(context), 0, 0);
+            toSQLCast(context, getDataType(context.configuration()), 0, 0);
         }
     }
 
@@ -253,7 +253,7 @@ class Val<T> extends AbstractField<T> implements Param<T> {
         context.sql("cast(");
         toSQL(context, getValue(), getType());
         context.sql(" as ")
-               .sql(type.getCastTypeName(context, precision, scale))
+               .sql(type.getCastTypeName(context.configuration(), precision, scale))
                .sql(")");
     }
 
@@ -476,7 +476,7 @@ class Val<T> extends AbstractField<T> implements Param<T> {
             if (type.isArray() && byte[].class != type) {
                 context.sql(getBindVariable(context));
                 context.sql("::");
-                context.keyword(FieldTypeHelper.getDataType(dialect, type).getCastTypeName(context));
+                context.keyword(FieldTypeHelper.getDataType(dialect, type).getCastTypeName(context.configuration()));
             }
 
             // ... and also for enum types

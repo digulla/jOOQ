@@ -295,7 +295,7 @@ public abstract class AbstractRoutine<T> extends AbstractSchemaProviderQueryPart
         ExecuteListener listener = new ExecuteListeners(ctx);
 
         try {
-            Connection connection = configuration.getConnection();
+            Connection connection = configuration.getConnectionProvider().getConnection();
 
             listener.renderStart(ctx);
             ctx.sql(create(configuration).render(this));
@@ -501,7 +501,7 @@ public abstract class AbstractRoutine<T> extends AbstractSchemaProviderQueryPart
     }
 
     private final void toSQLQualifiedName(RenderContext context) {
-        Schema mappedSchema = Util.getMappedSchema(context, getSchema());
+        Schema mappedSchema = Util.getMappedSchema(context.configuration(), getSchema());
 
         if (context.qualify()) {
             if (mappedSchema != null) {

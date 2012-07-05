@@ -35,11 +35,9 @@
  */
 package org.jooq.util.sqlserver;
 
-import java.sql.Connection;
-
+import org.jooq.Configuration;
 import org.jooq.SQLDialect;
-import org.jooq.SchemaMapping;
-import org.jooq.conf.Settings;
+import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.Factory;
 
 /**
@@ -47,7 +45,6 @@ import org.jooq.impl.Factory;
  *
  * @author Lukas Eder
  */
-@SuppressWarnings("deprecation")
 public class SQLServerFactory extends Factory {
 
     /**
@@ -56,53 +53,13 @@ public class SQLServerFactory extends Factory {
     private static final long serialVersionUID = -351817568648116452L;
 
     /**
-     * Create a factory with connection and a schema mapping configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param mapping The schema mapping to use with objects created from this
-     *            factory
-     * @deprecated - 2.0.5 - Use {@link #SQLServerFactory(Connection, Settings)}
-     *             instead
-     */
-    @Deprecated
-    public SQLServerFactory(Connection connection, SchemaMapping mapping) {
-        super(connection, SQLDialect.SQLSERVER, mapping);
-    }
-
-    /**
-     * Create a factory with connection and a settings configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    public SQLServerFactory(Connection connection, Settings settings) {
-        super(connection, SQLDialect.SQLSERVER, settings);
-    }
-
-    /**
-     * Create a factory with connection
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     */
-    public SQLServerFactory(Connection connection) {
-        super(connection, SQLDialect.SQLSERVER);
-    }
-
-    /**
      * Create a factory with settings configured
      * <p>
      * Without a connection, this factory cannot execute queries. Use it to
      * render SQL only.
-     *
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
      */
-    public SQLServerFactory(Settings settings) {
-        super(SQLDialect.SQLSERVER, settings);
+    public SQLServerFactory(Configuration configuration) {
+        super(new DefaultConfiguration(configuration, SQLDialect.SQLSERVER));
     }
 
     /**
@@ -112,6 +69,6 @@ public class SQLServerFactory extends Factory {
      * render SQL only.
      */
     public SQLServerFactory() {
-        super(SQLDialect.SQLSERVER);
+        super(new DefaultConfiguration(SQLDialect.SQLSERVER));
     }
 }

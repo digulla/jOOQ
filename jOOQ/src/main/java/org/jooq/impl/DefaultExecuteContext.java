@@ -62,7 +62,7 @@ import org.jooq.Update;
  *
  * @author Lukas Eder
  */
-class DefaultExecuteContext extends AbstractConfiguration implements ExecuteContext {
+class DefaultExecuteContext implements ExecuteContext {
 
     /**
      * Generated UID
@@ -84,6 +84,8 @@ class DefaultExecuteContext extends AbstractConfiguration implements ExecuteCont
     private transient Result<?>                  result;
     private transient SQLException               sqlException;
     private transient RuntimeException           exception;
+
+    private Configuration configuration;
 
     // ------------------------------------------------------------------------
     // XXX: Static utility methods for handling blob / clob lifecycle
@@ -163,7 +165,7 @@ class DefaultExecuteContext extends AbstractConfiguration implements ExecuteCont
     }
 
     private DefaultExecuteContext(Configuration configuration, Query query, Query[] batchQueries, Routine<?> routine) {
-        super(configuration);
+        this.configuration = configuration;
 
         this.query = query;
         this.batchQueries = (batchQueries == null ? new Query[0] : batchQueries);

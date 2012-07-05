@@ -614,9 +614,9 @@ final class Util {
      */
     static final Connection getDriverConnection(Configuration configuration) {
         if (configuration != null) {
-            Connection connection = configuration.getConnection();
 
-            if (connection != null) {
+            if (configuration.getConnectionProvider().isConnected()) {
+                Connection connection = configuration.getConnectionProvider().getConnection();
 
                 // If the connection is wrapped by jOOQ, extract the underlying
                 // connection

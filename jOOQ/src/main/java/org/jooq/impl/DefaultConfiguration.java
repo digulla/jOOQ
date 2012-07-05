@@ -35,13 +35,14 @@
  */
 package org.jooq.impl;
 
-import java.sql.Connection;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.sql.DataSource;
+import javax.xml.bind.JAXB;
 
 import org.jooq.Configuration;
+import org.jooq.ConnectionProvider;
 import org.jooq.SQLDialect;
 import org.jooq.conf.Settings;
 
@@ -50,7 +51,7 @@ import org.jooq.conf.Settings;
  *
  * @author Lukas Eder
  */
-final class DefaultConfiguration implements Configuration {
+public class DefaultConfiguration implements Configuration {
 
     /**
      * Generated UID
@@ -59,27 +60,59 @@ final class DefaultConfiguration implements Configuration {
 
     static final Configuration DEFAULT_CONFIGURATION = new DefaultConfiguration();
 
+    public DefaultConfiguration() {
+        this((SQLDialect)null);
+    }
+
+    public DefaultConfiguration(Configuration template) {
+        if(null != template.getDialect()) {
+            dialect = template.getDialect();
+        }
+        connectionProvider = template.getConnectionProvider();
+        settings = template.getSettings(); // TODO clone?
+        if(null == settings) {
+            settings = new Settings();
+        }
+        data = template.getData(); // TODO clone?
+    }
+
+    public DefaultConfiguration(Configuration template, SQLDialect dialect) {
+        this(template);
+        if(null != dialect) {
+            this.dialect = dialect;
+        }
+    }
+
+    public DefaultConfiguration(SQLDialect dialect) {
+        if(null != dialect) {
+            this.dialect = dialect;
+        }
+        this.settings = new Settings();
+    }
+
     @SuppressWarnings("deprecation")
+    private SQLDialect dialect = SQLDialect.SQL99;
+
+    public void setDialect(SQLDialect dialect) {
+        this.dialect = dialect;
+    }
+
     @Override
     public final SQLDialect getDialect() {
-        return SQLDialect.SQL99;
+        return dialect;
+    }
+
+    private ConnectionProvider connectionProvider;
+
+    @Override
+    public void setConnectionProvider(ConnectionProvider connectionProvider) {
+        this.connectionProvider = connectionProvider;
     }
 
     @Override
-    public final DataSource getDataSource() {
-        return null;
+    public ConnectionProvider getConnectionProvider() {
+        return connectionProvider;
     }
-
-    @Override
-    public void setDataSource(DataSource datasource) {}
-
-    @Override
-    public final Connection getConnection() {
-        return null;
-    }
-
-    @Override
-    public final void setConnection(Connection connection) {}
 
     @Override
     @Deprecated
@@ -87,30 +120,39 @@ final class DefaultConfiguration implements Configuration {
         return org.jooq.SchemaMapping.NO_MAPPING;
     }
 
-    @Override
-    public final Settings getSettings() {
-        return new Settings();
+    private Settings settings;
+
+    public void setSettings(Settings settings) {
+        this.settings = settings;
     }
 
     @Override
+    public final Settings getSettings() {
+        return settings;
+    }
+
+    private Map<String, Object> data = new HashMap<String, Object>();
+
+    @Override
     public final Map<String, Object> getData() {
-        return new HashMap<String, Object>();
+        return data;
     }
 
     @Override
     public final Object getData(String key) {
-        return null;
+        return data.get(key);
     }
 
     @Override
     public final Object setData(String key, Object value) {
-        return null;
+        return data.put(key, value);
     }
 
-    /**
-     * No further instances
-     */
-    private DefaultConfiguration() {}
+    @Override
+    public Factory getNewFactory() {
+        return new Factory(this);
+    }
+
 
     // -------------------------------------------------------------------------
     // XXX The Object API
@@ -118,6 +160,13 @@ final class DefaultConfiguration implements Configuration {
 
     @Override
     public String toString() {
-        return new Factory(getConnection(), getDialect(), getSettings()).toString();
+        StringWriter writer = new StringWriter();
+        JAXB.marshal(settings, writer);
+
+        return getClass().getSimpleName() + " [\n\tconnected=" + connectionProvider.isConnected() +
+            ",\n\tdialect=" + dialect +
+            ",\n\tdata=" + data +
+            ",\n\tsettings=\n\t\t" + writer.toString().trim().replace("\n", "\n\t\t") +
+            "\n]";
     }
 }

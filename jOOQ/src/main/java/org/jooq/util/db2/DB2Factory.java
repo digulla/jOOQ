@@ -35,11 +35,9 @@
  */
 package org.jooq.util.db2;
 
-import java.sql.Connection;
-
+import org.jooq.Configuration;
 import org.jooq.SQLDialect;
-import org.jooq.SchemaMapping;
-import org.jooq.conf.Settings;
+import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.Factory;
 
 /**
@@ -47,50 +45,12 @@ import org.jooq.impl.Factory;
  *
  * @author Lukas Eder
  */
-@SuppressWarnings("deprecation")
 public class DB2Factory extends Factory {
 
     /**
      * Generated UID
      */
     private static final long serialVersionUID = -5683650832655465156L;
-
-    /**
-     * Create a factory with connection and a schema mapping configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param mapping The schema mapping to use with objects created from this
-     *            factory
-     * @deprecated - 2.0.5 - Use {@link #DB2Factory(Connection, Settings)}
-     *             instead
-     */
-    @Deprecated
-    public DB2Factory(Connection connection, SchemaMapping mapping) {
-        super(connection, SQLDialect.DB2, mapping);
-    }
-
-    /**
-     * Create a factory with connection and a settings configured
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    public DB2Factory(Connection connection, Settings settings) {
-        super(connection, SQLDialect.DB2, settings);
-    }
-
-    /**
-     * Create a factory with connection
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     */
-    public DB2Factory(Connection connection) {
-        super(connection, SQLDialect.DB2);
-    }
 
     /**
      * Create a factory with settings configured
@@ -100,9 +60,10 @@ public class DB2Factory extends Factory {
      *
      * @param settings The runtime settings to apply to objects created from
      *            this factory
+     * @param configuration
      */
-    public DB2Factory(Settings settings) {
-        super(SQLDialect.DB2, settings);
+    public DB2Factory(Configuration configuration) {
+        super(new DefaultConfiguration(configuration, SQLDialect.DB2));
     }
 
     /**
@@ -112,6 +73,6 @@ public class DB2Factory extends Factory {
      * render SQL only.
      */
     public DB2Factory() {
-        super(SQLDialect.DB2);
+        super(new DefaultConfiguration(SQLDialect.DB2));
     }
 }

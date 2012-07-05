@@ -56,7 +56,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -70,12 +69,7 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import javax.sql.DataSource;
-import javax.xml.bind.JAXB;
 
 import org.jooq.AggregateFunction;
 import org.jooq.ArrayRecord;
@@ -134,7 +128,6 @@ import org.jooq.WindowIgnoreNullsStep;
 import org.jooq.WindowOverStep;
 import org.jooq.conf.RenderNameStyle;
 import org.jooq.conf.Settings;
-import org.jooq.conf.SettingsTools;
 import org.jooq.exception.DataAccessException;
 import org.jooq.exception.InvalidResultException;
 import org.jooq.exception.SQLDialectNotSupportedException;
@@ -178,14 +171,7 @@ public class Factory implements FactoryOperations {
 
     private static final Factory[]       DEFAULT_INSTANCES = new Factory[SQLDialect.values().length];
 
-    private transient Connection         connection;
-    private transient DataSource         datasource;
-    private final SQLDialect             dialect;
-
-    @SuppressWarnings("deprecation")
-    private final org.jooq.SchemaMapping mapping;
-    private final Settings               settings;
-    private final Map<String, Object>    data;
+    private transient Configuration      configuration;
 
     // -------------------------------------------------------------------------
     // XXX Constructors
@@ -198,210 +184,28 @@ public class Factory implements FactoryOperations {
      *            factory
      * @param dialect The dialect to use with objects created from this factory
      */
-    public Factory(Connection connection, SQLDialect dialect) {
-        this(null, connection, dialect, null, null, null);
-    }
-
-    /**
-     * Create a factory with a data source and a dialect configured.
-     *
-     * @param datasource The data source to use with objects created from this
-     *            factory
-     * @param dialect The dialect to use with objects created from this factory
-     */
-    public Factory(DataSource datasource, SQLDialect dialect) {
-        this(datasource, null, dialect, null, null, null);
-    }
-
-    /**
-     * Create a factory with a dialect configured.
-     * <p>
-     * Without a connection or data source, this factory cannot execute queries.
-     * Use it to render SQL only.
-     *
-     * @param dialect The dialect to use with objects created from this factory
-     */
-    public Factory(SQLDialect dialect) {
-        this(null, null, dialect, null, null, null);
-    }
-
-    /**
-     * Create a factory with a connection, a dialect and a schema mapping
-     * configured.
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param dialect The dialect to use with objects created from this factory
-     * @param mapping The schema mapping to use with objects created from this
-     *            factory
-     * @deprecated - 2.0.5 - Use
-     *             {@link #Factory(Connection, SQLDialect, Settings)} instead
-     */
-    @Deprecated
-    public Factory(Connection connection, SQLDialect dialect, org.jooq.SchemaMapping mapping) {
-        this(null, connection, dialect, null, null, null);
-    }
-
-    /**
-     * Create a factory with a connection, a dialect and settings configured.
-     *
-     * @param connection The connection to use with objects created from this
-     *            factory
-     * @param dialect The dialect to use with objects created from this factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    @SuppressWarnings("deprecation")
-    public Factory(Connection connection, SQLDialect dialect, Settings settings) {
-        this(null, connection, dialect, settings, new org.jooq.SchemaMapping(settings), null);
-    }
-
-    /**
-     * Create a factory with a data source, a dialect and settings configured.
-     *
-     * @param datasource The data source to use with objects created from this
-     *            factory
-     * @param dialect The dialect to use with objects created from this factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    @SuppressWarnings("deprecation")
-    public Factory(DataSource datasource, SQLDialect dialect, Settings settings) {
-        this(datasource, null, dialect, settings, new org.jooq.SchemaMapping(settings), null);
-    }
-
-    /**
-     * Create a factory with a dialect and settings configured
-     * <p>
-     * Without a connection or data source, this factory cannot execute queries.
-     * Use it to render SQL only.
-     *
-     * @param dialect The dialect to use with objects created from this factory
-     * @param settings The runtime settings to apply to objects created from
-     *            this factory
-     */
-    @SuppressWarnings("deprecation")
-    public Factory(SQLDialect dialect, Settings settings) {
-        this(null, null, dialect, settings, new org.jooq.SchemaMapping(settings), null);
-    }
-
-    /**
-     * Do the instanciation
-     */
-    @SuppressWarnings("deprecation")
-    private Factory(DataSource datasource, Connection connection, SQLDialect dialect, Settings settings, org.jooq.SchemaMapping mapping, Map<String, Object> data) {
-        this.connection = connection;
-        this.datasource = datasource;
-        this.dialect = dialect;
-        this.settings = settings != null ? settings : SettingsTools.defaultSettings();
-        this.mapping = mapping != null ? mapping : new org.jooq.SchemaMapping(this.settings);
-        this.data = data != null ? data : new HashMap<String, Object>();
+    public Factory(Configuration configuration) {
+        this.configuration = configuration;
     }
 
     // -------------------------------------------------------------------------
     // XXX Configuration API
     // -------------------------------------------------------------------------
 
+    @Override
+    public Configuration configuration() {
+        return configuration;
+    }
+
     /**
      * {@inheritDoc}
      */
-    @Override
     public final SQLDialect getDialect() {
-        return dialect;
+        return configuration.getDialect();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final DataSource getDataSource() {
-        return datasource;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setDataSource(DataSource datasource) {
-        this.datasource = datasource;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public final Connection getConnection() {
-
-        // SQL-builder only Factory
-        if (connection == null && datasource == null) {
-            return null;
-        }
-
-        // [#1424] DataSource-enabled Factory with no Connection yet
-        else if (connection == null && datasource != null) {
-            return new DataSourceConnection(datasource, null, settings);
-        }
-
-        // Factory clone
-        else if (connection.getClass() == DataSourceConnection.class) {
-            return connection;
-        }
-
-        // Factory clone
-        else if (connection.getClass() == ConnectionProxy.class) {
-            return connection;
-        }
-
-        // [#1424] Connection-based Factory
-        else {
-            return new DataSourceConnection(null, new ConnectionProxy(connection, settings), settings);
-        }
-    }
-
-    @Override
-    public final void setConnection(Connection connection) {
-        this.connection = connection;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Deprecated
-    public final org.jooq.SchemaMapping getSchemaMapping() {
-        return mapping;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final Settings getSettings() {
-        return settings;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final Map<String, Object> getData() {
-        return data;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final Object getData(String key) {
-        return data.get(key);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final Object setData(String key, Object value) {
-        return data.put(key, value);
+        return configuration.getConnectionProvider().getConnection();
     }
 
     // -------------------------------------------------------------------------
@@ -422,7 +226,7 @@ public class Factory implements FactoryOperations {
      * RenderContext for JOOQ INTERNAL USE only. Avoid referencing it directly
      */
     public final RenderContext renderContext() {
-        return new DefaultRenderContext(this);
+        return new DefaultRenderContext(configuration);
     }
 
     /**
@@ -461,7 +265,7 @@ public class Factory implements FactoryOperations {
      * RenderContext for JOOQ INTERNAL USE only. Avoid referencing it directly
      */
     public final BindContext bindContext(PreparedStatement stmt) {
-        return new DefaultBindContext(this, stmt);
+        return new DefaultBindContext(configuration, stmt);
     }
 
     /**
@@ -497,7 +301,8 @@ public class Factory implements FactoryOperations {
     @Override
     public final void attach(Collection<Attachable> attachables) {
         for (Attachable attachable : attachables) {
-            attachable.attach(this);
+            // TODO adigulla: is this correct?
+            attachable.attach(configuration);
         }
     }
 
@@ -1245,7 +1050,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final Query query(String sql, Object... bindings) {
-        return new SQLQuery(this, sql, bindings);
+        return new SQLQuery(configuration, sql, bindings);
     }
 
     /**
@@ -1253,7 +1058,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final Query query(String sql, QueryPart... parts) {
-        return new SQLQuery(this, sql, parts);
+        return new SQLQuery(configuration, sql, parts);
     }
 
     /**
@@ -1389,7 +1194,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final ResultQuery<Record> resultQuery(String sql, Object... bindings) {
-        return new SQLResultQuery(this, sql, bindings);
+        return new SQLResultQuery(configuration, sql, bindings);
     }
 
     /**
@@ -1397,7 +1202,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final ResultQuery<Record> resultQuery(String sql, QueryPart... parts) {
-        return new SQLResultQuery(this, sql, parts);
+        return new SQLResultQuery(configuration, sql, parts);
     }
 
     // -------------------------------------------------------------------------
@@ -1414,11 +1219,11 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final Result<Record> fetch(ResultSet rs) {
-        ExecuteContext ctx = new DefaultExecuteContext(this);
+        ExecuteContext ctx = new DefaultExecuteContext(configuration);
         ExecuteListener listener = new ExecuteListeners(ctx);
 
         try {
-            FieldProvider fields = new MetaDataFieldProvider(this, rs.getMetaData());
+            FieldProvider fields = new MetaDataFieldProvider(configuration, rs.getMetaData());
 
             ctx.resultSet(rs);
             return new CursorImpl<Record>(ctx, listener, fields).fetch();
@@ -1456,14 +1261,14 @@ public class Factory implements FactoryOperations {
         FieldList fields = new FieldList();
 
         if (all.size() == 0) {
-            return new ResultImpl<Record>(this, fields);
+            return new ResultImpl<Record>(configuration, fields);
         }
         else {
             for (String name : all.get(0)) {
                 fields.add(fieldByName(String.class, name));
             }
 
-            Result<Record> result = new ResultImpl<Record>(this, fields);
+            Result<Record> result = new ResultImpl<Record>(configuration, fields);
 
             if (all.size() > 1) {
                 for (String[] values : all.subList(1, all.size())) {
@@ -1530,7 +1335,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> SimpleSelectWhereStep<R> selectFrom(Table<R> table) {
-        return new SimpleSelectImpl<R>(this, table);
+        return new SimpleSelectImpl<R>(configuration, table);
     }
 
     /**
@@ -1538,7 +1343,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final SelectSelectStep select(Field<?>... fields) {
-        return new SelectImpl(this).select(fields);
+        return new SelectImpl(configuration).select(fields);
     }
 
     /**
@@ -1546,7 +1351,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final SelectSelectStep selectZero() {
-        return new SelectImpl(this).select(zero());
+        return new SelectImpl(configuration).select(zero());
     }
 
     /**
@@ -1554,7 +1359,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final SelectSelectStep selectOne() {
-        return new SelectImpl(this).select(one());
+        return new SelectImpl(configuration).select(one());
     }
 
     /**
@@ -1562,7 +1367,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final SelectSelectStep selectCount() {
-        return new SelectImpl(this).select(count());
+        return new SelectImpl(configuration).select(count());
     }
 
     /**
@@ -1570,7 +1375,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final SelectSelectStep selectDistinct(Field<?>... fields) {
-        return new SelectImpl(this, true).select(fields);
+        return new SelectImpl(configuration, true).select(fields);
     }
 
     /**
@@ -1578,7 +1383,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final SelectSelectStep select(Collection<? extends Field<?>> fields) {
-        return new SelectImpl(this).select(fields);
+        return new SelectImpl(configuration).select(fields);
     }
 
     /**
@@ -1586,7 +1391,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final SelectSelectStep selectDistinct(Collection<? extends Field<?>> fields) {
-        return new SelectImpl(this, true).select(fields);
+        return new SelectImpl(configuration, true).select(fields);
     }
 
     /**
@@ -1594,7 +1399,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final SelectQuery selectQuery() {
-        return new SelectQueryImpl(this);
+        return new SelectQueryImpl(configuration);
     }
 
     /**
@@ -1602,7 +1407,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> SimpleSelectQuery<R> selectQuery(TableLike<R> table) {
-        return new SimpleSelectQueryImpl<R>(this, table);
+        return new SimpleSelectQueryImpl<R>(configuration, table);
     }
 
     /**
@@ -1610,7 +1415,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> InsertQuery<R> insertQuery(Table<R> into) {
-        return new InsertQueryImpl<R>(this, into);
+        return new InsertQueryImpl<R>(configuration, into);
     }
 
     /**
@@ -1618,7 +1423,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> InsertSetStep<R> insertInto(Table<R> into) {
-        return new InsertImpl<R>(this, into, Collections.<Field<?>>emptyList());
+        return new InsertImpl<R>(configuration, into, Collections.<Field<?>>emptyList());
     }
 
     /**
@@ -1626,7 +1431,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> InsertValuesStep<R> insertInto(Table<R> into, Field<?>... fields) {
-        return new InsertImpl<R>(this, into, Arrays.asList(fields));
+        return new InsertImpl<R>(configuration, into, Arrays.asList(fields));
     }
 
     /**
@@ -1634,7 +1439,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> InsertValuesStep<R> insertInto(Table<R> into, Collection<? extends Field<?>> fields) {
-        return new InsertImpl<R>(this, into, fields);
+        return new InsertImpl<R>(configuration, into, fields);
     }
 
     /**
@@ -1643,7 +1448,7 @@ public class Factory implements FactoryOperations {
     @Override
     @Deprecated
     public final <R extends Record> Insert<R> insertInto(Table<R> into, Select<?> select) {
-        return new InsertSelectQueryImpl<R>(this, into, into.getFields(), select);
+        return new InsertSelectQueryImpl<R>(configuration, into, into.getFields(), select);
     }
 
     /**
@@ -1651,7 +1456,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> UpdateQuery<R> updateQuery(Table<R> table) {
-        return new UpdateQueryImpl<R>(this, table);
+        return new UpdateQueryImpl<R>(configuration, table);
     }
 
     /**
@@ -1659,7 +1464,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> UpdateSetStep<R> update(Table<R> table) {
-        return new UpdateImpl<R>(this, table);
+        return new UpdateImpl<R>(configuration, table);
     }
 
     /**
@@ -1667,7 +1472,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> MergeUsingStep<R> mergeInto(Table<R> table) {
-        return new MergeImpl<R>(this, table);
+        return new MergeImpl<R>(configuration, table);
     }
 
     /**
@@ -1675,7 +1480,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> DeleteQuery<R> deleteQuery(Table<R> table) {
-        return new DeleteQueryImpl<R>(this, table);
+        return new DeleteQueryImpl<R>(configuration, table);
     }
 
     /**
@@ -1683,7 +1488,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> DeleteWhereStep<R> delete(Table<R> table) {
-        return new DeleteImpl<R>(this, table);
+        return new DeleteImpl<R>(configuration, table);
     }
 
     /**
@@ -1735,7 +1540,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends Record> Truncate<R> truncate(Table<R> table) {
-        return new TruncateImpl<R>(this, table);
+        return new TruncateImpl<R>(configuration, table);
     }
 
     // -------------------------------------------------------------------------
@@ -1816,7 +1621,7 @@ public class Factory implements FactoryOperations {
         try {
             String schemaName = render(schema);
 
-            switch (dialect) {
+            switch (getDialect()) {
                 case DB2:
                 case DERBY:
                 case H2:
@@ -1850,8 +1655,8 @@ public class Factory implements FactoryOperations {
             }
         }
         finally {
-            getRenderMapping(settings).setDefaultSchema(schema.getName());
-            mapping.use(schema);
+            getRenderMapping(configuration.getSettings()).setDefaultSchema(schema.getName());
+            configuration.getSchemaMapping().use(schema);
         }
 
         return result;
@@ -1874,7 +1679,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends UDTRecord<R>> R newRecord(UDT<R> type) {
-        return Util.newRecord(type, this);
+        return Util.newRecord(type, configuration);
     }
 
     /**
@@ -1882,7 +1687,7 @@ public class Factory implements FactoryOperations {
      */
     @Override
     public final <R extends TableRecord<R>> R newRecord(Table<R> table) {
-        return Util.newRecord(table, this);
+        return Util.newRecord(table, configuration);
     }
 
     /**
@@ -5891,19 +5696,13 @@ public class Factory implements FactoryOperations {
 
     @Override
     public String toString() {
-        StringWriter writer = new StringWriter();
-        JAXB.marshal(settings, writer);
-
-        return "Factory [\n\tconnected=" + (connection != null) +
-            ",\n\tdialect=" + dialect +
-            ",\n\tdata=" + data +
-            ",\n\tsettings=\n\t\t" + writer.toString().trim().replace("\n", "\n\t\t") +
+        return "Factory [\n\tconfig=" + configuration +
             "\n]";
     }
 
     static {
         for (SQLDialect dialect : SQLDialect.values()) {
-            Factory.DEFAULT_INSTANCES[dialect.ordinal()] = new Factory(dialect);
+            Factory.DEFAULT_INSTANCES[dialect.ordinal()] = new Factory(new DefaultConfiguration(dialect));
         }
     }
 
@@ -5911,7 +5710,7 @@ public class Factory implements FactoryOperations {
      * Get a default <code>Factory</code> without a {@link Connection}
      */
     final static Factory getNewFactory(SQLDialect dialect) {
-        return getNewFactory(DEFAULT_INSTANCES[dialect.ordinal()]);
+        return DEFAULT_INSTANCES[dialect.ordinal()].configuration.getNewFactory();
     }
 
     /**
@@ -5919,25 +5718,6 @@ public class Factory implements FactoryOperations {
      */
     final static Factory getStaticFactory(SQLDialect dialect) {
         return DEFAULT_INSTANCES[dialect.ordinal()];
-    }
-
-    /**
-     * Get a default <code>Factory</code> with a {@link Connection}
-     */
-    @SuppressWarnings("deprecation")
-    final static Factory getNewFactory(Configuration configuration) {
-        if (configuration == null) {
-            return getNewFactory(DefaultConfiguration.DEFAULT_CONFIGURATION);
-        }
-        else {
-            return new Factory(
-                configuration.getDataSource(),
-                configuration.getConnection(),
-                configuration.getDialect(),
-                configuration.getSettings(),
-                configuration.getSchemaMapping(),
-                configuration.getData());
-        }
     }
 
     /**
@@ -5970,9 +5750,9 @@ public class Factory implements FactoryOperations {
             log.debug("Deserialising", this);
         }
 
-        Configuration registered = org.jooq.ConfigurationRegistry.provideFor(this);
+        Configuration registered = org.jooq.ConfigurationRegistry.provideFor(configuration);
         if (registered != null) {
-            connection = registered.getConnection();
+            configuration = registered;
         }
 
         if (log.isDebugEnabled()) {

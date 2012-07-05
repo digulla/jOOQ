@@ -49,6 +49,7 @@ import static org.jooq.SQLDialect.SQLITE;
 import static org.jooq.SQLDialect.SQLSERVER;
 import static org.jooq.SQLDialect.SYBASE;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -70,7 +71,9 @@ import org.jooq.impl.Factory;
  * @author Lukas Eder
  * @see Factory
  */
-public interface FactoryOperations extends Configuration {
+public interface FactoryOperations extends Serializable {
+
+    Configuration configuration();
 
     // -------------------------------------------------------------------------
     // XXX RenderContext and BindContext accessors

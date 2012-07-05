@@ -99,7 +99,7 @@ implements
 
     @Override
     public final void toSQL(RenderContext context) {
-        context.sql(pivot(context));
+        context.sql(pivot(context.configuration()));
     }
 
     private Table<?> pivot(Configuration configuration) {
@@ -184,7 +184,7 @@ implements
                         join = join.and(condition(pivot, field));
                     }
 
-                    Select<?> aggregateSelect = create(context)
+                    Select<?> aggregateSelect = create(context.configuration())
                         .select(aggregateFunction)
                         .from(table)
                         .where(on.equal((Field<T>) inField))
@@ -196,7 +196,7 @@ implements
 
             // This is the complete select
             Table<Record> select =
-            create(context).select(aliasedGroupingFields)
+            create(context.configuration()).select(aliasedGroupingFields)
                            .select(aggregationSelects)
                            .from(pivot)
                            .where(pivot.getField(on).in(in.toArray(new Field[0])))
@@ -299,7 +299,7 @@ implements
 
     @Override
     public final void bind(BindContext context) throws DataAccessException {
-        context.bind(pivot(context));
+        context.bind(pivot(context.configuration()));
     }
 
     @Override

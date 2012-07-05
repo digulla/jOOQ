@@ -88,7 +88,7 @@ class DefaultBindContext extends AbstractBindContext {
     }
 
     DefaultBindContext(BindContext context) {
-        this(context, context.statement());
+        this(context.configuration(), context.statement());
 
         declareFields(context.declareFields());
         declareTables(context.declareTables());
